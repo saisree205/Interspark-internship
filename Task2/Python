@@ -1,0 +1,47 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Load Dataset
+df = pd.read_csv('superstore_sales.csv')
+
+# Data Cleaning
+df.drop_duplicates(inplace=True)
+df.fillna(0, inplace=True)
+
+# Revenue
+total_revenue = df['Sales'].sum()
+print("Revenue:", total_revenue)
+
+# Profit
+total_profit = df['Profit'].sum()
+print("Profit:", total_profit)
+
+# Profit Margin
+profit_margin = (total_profit/total_revenue)*100
+print("Profit Margin:", profit_margin)
+
+# Sales by Region
+region_sales = df.groupby('Region')['Sales'].sum()
+
+plt.figure(figsize=(8,5))
+region_sales.plot(kind='bar')
+plt.title("Sales by Region")
+plt.show()
+
+# Top Products
+top_products = df.groupby('Product Name')['Sales'].sum().sort_values(ascending=False).head(10)
+
+plt.figure(figsize=(10,5))
+top_products.plot(kind='bar')
+plt.title("Top 10 Products")
+plt.show()
+
+# Monthly Trend
+df['Order Date'] = pd.to_datetime(df['Order Date'])
+
+monthly_sales = df.groupby(df['Order Date'].dt.to_period('M'))['Sales'].sum()
+
+monthly_sales.plot(figsize=(10,5))
+plt.title("Monthly Sales Trend")
+plt.show()
