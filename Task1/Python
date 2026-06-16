@@ -1,0 +1,60 @@
+# Import Libraries
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Load Dataset
+df = pd.read_csv('customer_behavior.csv')
+
+# Display Data
+print(df.head())
+print(df.info())
+
+# Data Cleaning
+df.drop_duplicates(inplace=True)
+df.fillna(method='ffill', inplace=True)
+
+# Basic Statistics
+print(df.describe())
+
+# Purchase Pattern Analysis
+plt.figure(figsize=(8,5))
+sns.histplot(df['Purchase_Amount'], bins=20)
+plt.title("Purchase Amount Distribution")
+plt.show()
+
+# Customer Segmentation (RFM)
+import datetime as dt
+
+snapshot_date = df['Purchase_Date'].max()
+
+rfm = df.groupby('Customer_ID').agg({
+    'Purchase_Date': lambda x: (snapshot_date - x.max()).days,
+    'Customer_ID': 'count',
+    'Purchase_Amount': 'sum'
+})
+
+rfm.columns = ['Recency','Frequency','Monetary']
+
+print(rfm.head())
+
+# Clustering
+from sklearn.cluster import KMeans
+
+kmeans = KMeans(n_clusters=4, random_state=42)
+rfm['Cluster'] = kmeans.fit_predict(rfm)
+
+# Visualization
+plt.figure(figsize=(8,5))
+sns.scatterplot(
+    x='Frequency',
+    y='Monetary',
+    hue='Cluster',
+    data=rfm
+)
+plt.show()
+
+# Retention Analysis
+retention = df.groupby('Customer_ID').size()
+print(retention.describe())
